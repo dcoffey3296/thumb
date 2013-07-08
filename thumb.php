@@ -182,7 +182,7 @@ file_put_contents($base . "_stills/.$base", "");
 
 
 $cmd = "ffmpeg -i $input -f image2 -vf \"fps=fps=(1/$frequency),scale=" . $w . "x" . $h . "\" " . $base . "_stills/" . $base . "-single_%04d.jpg  2>&1 >> /dev/null && rm " . $base . "_stills/.$base";
-echo $cmd . "\n";
+// echo $cmd . "\n";
 
 $success = exec($cmd);
 
@@ -204,7 +204,7 @@ $images_per_stack = 5;
 $current_stack = 0;
 $vtt = "WEBVTT\n";
 
-var_dump($listing);
+// var_dump($listing);
 foreach ($listing as $img)
 {    
     // add the image to the stack
@@ -213,7 +213,7 @@ foreach ($listing as $img)
     // if the current stack is full, write the sprite 
     if (count($image_stack) >= $images_per_stack || strcmp("$img", $listing[count($listing) - 1]) === 0)
     {
-        var_dump($image_stack);
+        // var_dump($image_stack);
         file_put_contents($base . "_stills/.stitch", "");
         exec("convert " . implode(" ", $image_stack) . " -append " . $base . "_stills/$base" . "-" . $current_stack . ".jpg && rm $base" . "_stills/.stitch");
         
