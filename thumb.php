@@ -1,13 +1,123 @@
 <?php
 
-// get the input file
-$input = $argv[1];
-$frequency = $argv[2];
+require_once(dirname(__FILE__)) . "/getopts.php";
 
-// image scaling
+// defaults
+$input = "";
+$frequency = 5;
 $h = 90;
 $w = 160;
 $web_path = "http://cdn.cs76.net/lectures/1";
+
+$opts = getopts(array(
+        "f" => array("switch" => array("f", "frequency"), "type" => GETOPT_VAL),
+        "h" => array("switch" => array("h", "height"), "type" => GETOPT_VAL),
+        "i" => array("switch" => array("i", "input"), "type" => GETOPT_VAL),
+        "p" => array("switch" => array("p", "path"), "type" => GETOPT_VAL), 
+        "w" => array("switch" => array("w", "width"), "type" => GETOPT_VAL), 
+        $argv));
+
+// handle command line args
+foreach (array_keys($opts) as $opt)
+{
+    if (is_numeric($opt))
+    {
+        continue;
+    }
+    
+
+    switch ($opt)
+    {
+        // ignore unknown commandline input
+        case "cmdline":
+            continue;
+        break;
+
+        case "f":
+            if ($opts[$opt] === 0)
+            {
+                // no heights specified, use default
+                echo "Using default frequency: $frequency\n";
+            } 
+            else if (is_numeric($opts[$opt]) && $opts[$opt] > 0)
+            {
+                // user specified height
+                $frequency = $opts[$opt];
+            }
+            else
+            {
+                error_log("Invalid frequency: " . $opts[$opt] . "\n");
+                exit(1);
+            }
+        break;
+
+        case "h":
+            if ($opts[$opt] === 0)
+            {
+                // no heights specified, use default
+                echo "Using default height: $h\n";
+            } 
+            else if (is_numeric($opts[$opt]) && $opts[$opt] > 0)
+            {
+                // user specified height
+                $h = $opts[$opt];
+            }
+            else
+            {
+                error_log("Invalid Height: " . $opts[$opt] . "\n");
+                exit(1);
+            }
+        break;
+
+        case "w":
+            if ($opts[$opt] === 0)
+            {
+                // no heights specified, use default
+                echo "Using default width: $h\n";
+            } 
+            else if (is_numeric($opts[$opt]) && $opts[$opt] > 0)
+            {
+                // user specified height
+                $w = $opts[$opt];
+            }
+            else
+            {
+                error_log("Invalid Width: " . $opts[$opt] . "\n");
+                exit(1);
+            }
+        break;
+
+        case "i":
+            if (file_exists($opts[$opt]))
+            {
+                // user specified height
+                $input = $opts[$opt];
+            }
+            else
+            {
+                error_log("Invalid Input: " . $opts[$opt] . "\n");
+                exit(1);
+            }
+        break;
+
+        case "p":
+            if ($opts[$opt] !== 0 && strlen($opts[$opt] > 0))
+            {
+                // user specified a path
+                $web_path = $opts[$opt];
+            }
+            else
+            {
+                echo "Path not specified, using default: $web_path\n";
+            }
+        break;
+
+        default:
+            error_log("Unknown argument: " . $opt . " => " . $opts[$opt]);
+    }
+}
+
+
 
 // get the input file's basename
 $base = pathinfo($input, PATHINFO_FILENAME);
