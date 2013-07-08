@@ -7,7 +7,8 @@ $input = "";
 $frequency = 5;
 $h = 90;
 $w = 160;
-$web_path = "http://cdn.cs76.net/lectures/1";
+$web_path = "http://cdn.cs76.net/2013/summer/lectures/1/thumbnails";
+$images_per_stack = 5;
 
 $opts = getopts(array(
         "f" => array("switch" => array("f", "frequency"), "type" => GETOPT_VAL),
@@ -73,7 +74,7 @@ foreach (array_keys($opts) as $opt)
             if ($opts[$opt] === 0)
             {
                 // no heights specified, use default
-                echo "Using default width: $h\n";
+                echo "Using default width: $w\n";
             } 
             else if (is_numeric($opts[$opt]) && $opts[$opt] > 0)
             {
@@ -100,6 +101,18 @@ foreach (array_keys($opts) as $opt)
             }
         break;
 
+        case "n":
+            if (strlen($opts[$opt]) > 0)
+            {
+                echo "Name is set to " . $opts[$opt] . "\n";
+                $base = $opts[$opt];
+            }
+            else
+            {
+                error_log("Using default name.\n");
+            }
+        break;
+
         case "p":
             if ($opts[$opt] !== 0 && strlen($opts[$opt] > 0))
             {
@@ -120,7 +133,10 @@ foreach (array_keys($opts) as $opt)
 
 
 // get the input file's basename
-$base = pathinfo($input, PATHINFO_FILENAME);
+if (isset($base)
+{
+    $base = pathinfo($input, PATHINFO_FILENAME);
+}
 
 // probe the input file
 $success = exec("ffprobe $input 2>&1 >> /dev/null", $array);
@@ -181,13 +197,13 @@ echo "Generating stills every $frequency seconds";
 file_put_contents($base . "_stills/.$base", "");
 
 
-$cmd = "ffmpeg -i $input -f image2 -vf \"fps=fps=(1/$frequency),scale=" . $w . "x" . $h . "\" " . $base . "_stills/" . $base . "-single_%04d.jpg  2>&1 >> /dev/null && rm " . $base . "_stills/.$base";
+$cmd = "ffmpeg -i $input -f image2 -vf \"fps=fps=(1/$frequency),scale=" . $w . "x" . $h . "\" thumbnails/" . $base . "-single_%04d.jpg  2>&1 >> /dev/null && rm thumbnails/.$base";
 // echo $cmd . "\n";
 
 $success = exec($cmd);
 
 // wait until stills are done
-while(file_exists($base . "_stills/.$base"))
+while(file_exists("thumbnails/" . $base))
 {
     echo ".";
     sleep(1);
@@ -195,12 +211,10 @@ while(file_exists($base . "_stills/.$base"))
 echo "\n";
 
 /*** stitch stills together ***/
-$listing = preg_grep("/^([^.]?" . $base . "-single)/", scandir($base . "_stills"));
+$listing = preg_grep("/^([^.]?" . $base . "-single)/", scandir("thumbnails"));
 $listing = array_values($listing);
 
-
 $image_stack = array();
-$images_per_stack = 5;
 $current_stack = 0;
 $vtt = "WEBVTT\n";
 
@@ -208,16 +222,16 @@ $vtt = "WEBVTT\n";
 foreach ($listing as $img)
 {    
     // add the image to the stack
-    $image_stack[] = $base . "_stills/$img";
+    $image_stack[] = "thumbnails/$img";
 
     // if the current stack is full, write the sprite 
     if (count($image_stack) >= $images_per_stack || strcmp("$img", $listing[count($listing) - 1]) === 0)
     {
         // var_dump($image_stack);
-        file_put_contents($base . "_stills/.stitch", "");
-        exec("convert " . implode(" ", $image_stack) . " -append " . $base . "_stills/$base" . "-" . $current_stack . ".jpg && rm $base" . "_stills/.stitch");
+        file_put_contents("thumbnails/.stitch-" . $base, "");
+        exec("convert " . implode(" ", $image_stack) . " -append thumbnails/$base" . "-" . $current_stack . ".jpg && rm thumbnails/.stitch-" . $base);
         
-        while (file_exists($base . "_stills/.stitch"))
+        while (file_exists("thumbnails/.stitch"))
         {
             sleep(1);
         }
