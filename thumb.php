@@ -112,13 +112,27 @@ foreach ($listing as $img)
             sleep(1);
         }
 
-        // remove the images
+        // print the line for each input file
         foreach ($image_stack as $key => $used)
         {
+            // vars for timecode
+            $tc1 = ($current_stack * $images_per_stack + $key) * $frequency;
+            $tc2 = ($current_stack * $images_per_stack + ($key + 1)) * $frequency;
+            
+            // check if the current point in time is beyond the end of the movie
+            if ($tc1 > $secs)
+            {
+                continue;
+            }
+            // if the first point is not beyond the duration but the second point is, make the second point the last frame
+            else if($tc2 > $secs)
+            {
+                $tc2 = $secs;
+            }
 
             // add to VTT file
             $vtt .= "\n";
-            $vtt .= convert_s_tc(($current_stack * $images_per_stack + $key) * $frequency) . " --> " . convert_s_tc(($current_stack * $images_per_stack + ($key + 1)) * $frequency) . "\n";
+            $vtt .= convert_s_tc($tc1) . " --> " . convert_s_tc($tc2) . "\n";
             $vtt .= $web_path . "/" . $base . "-" . $current_stack . ".jpg#xywh=" . /* xpos: */ "0" . "," . /* ypos: */ ($h * $key) . "," . /* width: */ $w . "," . /* height */ $h . "\n";
 
 
