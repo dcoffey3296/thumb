@@ -7,8 +7,13 @@ $input = "";
 $frequency = 5;
 $h = 90;
 $w = 160;
-$web_path = "http://cdn.cs76.net/2013/summer/lectures/1/thumbnails";
-$images_per_stack = 5;
+$web_path = "http://cdn.cs76.net/2013/summer/lectures/0/thumbnails";
+$thumb_dir = "thumbnails";
+$images_per_stack = 12;
+
+// 1 to 100, 0 being lowest quality
+$quality = 35;
+
 
 $opts = getopts(array(
         "f" => array("switch" => array("f", "frequency"), "type" => GETOPT_VAL),
@@ -125,6 +130,19 @@ foreach (array_keys($opts) as $opt)
             }
         break;
 
+        case "1":
+            if ($opts[$opt] > 0 && $opts[$opt] <= 100)
+            {
+                // user specified a path
+                $quality = $opts[$opt];
+                echo "Quality is set to: $quality";
+            }
+            else
+            {
+                echo "Quality not specified, using default: $quality\n";
+            }
+        break;
+
         default:
             error_log("Unknown argument: " . $opt . " => " . $opts[$opt]);
     }
@@ -133,7 +151,7 @@ foreach (array_keys($opts) as $opt)
 
 
 // get the input file's basename
-if (isset($base)
+if (isset($base));
 {
     $base = pathinfo($input, PATHINFO_FILENAME);
 }
@@ -186,7 +204,7 @@ echo "frames: " . floor((29.97 * $secs)) . "\n";
 echo "preview images will be " . floor($secs / $frequency) . "\n";
 
 try {
-    mkdir($base . "_stills");
+    mkdir($thumb_dir);
 } catch (Exception $e) {
     echo "file exists\n";
 }
@@ -194,16 +212,16 @@ try {
 // generate stills
 // http://ffmpeg.org/trac/ffmpeg/wiki/Create%20a%20thumbnail%20image%20every%20X%20seconds%20of%20the%20video
 echo "Generating stills every $frequency seconds";
-file_put_contents($base . "_stills/.$base", "");
+file_put_contents("$thumb_dir/.$base", "");
 
 
-$cmd = "ffmpeg -i $input -f image2 -vf \"fps=fps=(1/$frequency),scale=" . $w . "x" . $h . "\" thumbnails/" . $base . "-single_%04d.jpg  2>&1 >> /dev/null && rm thumbnails/.$base";
+$cmd = "ffmpeg -i $input -f image2 -vf \"fps=fps=(1/$frequency),scale=" . $w . "x" . $h . "\" $thumb_dir/" . $base . "-single_%04d.jpg > /dev/null 2>&1 && rm $thumb_dir/.$base";
 // echo $cmd . "\n";
 
 $success = exec($cmd);
 
 // wait until stills are done
-while(file_exists("thumbnails/" . $base))
+while(file_exists("$thumb_dir/" . $base))
 {
     echo ".";
     sleep(1);
@@ -211,7 +229,7 @@ while(file_exists("thumbnails/" . $base))
 echo "\n";
 
 /*** stitch stills together ***/
-$listing = preg_grep("/^([^.]?" . $base . "-single)/", scandir("thumbnails"));
+$listing = preg_grep("/^([^.]?" . $base . "-single)/", scandir("$thumb_dir"));
 $listing = array_values($listing);
 
 $image_stack = array();
@@ -222,16 +240,25 @@ $vtt = "WEBVTT\n";
 foreach ($listing as $img)
 {    
     // add the image to the stack
-    $image_stack[] = "thumbnails/$img";
+    $image_stack[] = "$thumb_dir/$img";
 
     // if the current stack is full, write the sprite 
     if (count($image_stack) >= $images_per_stack || strcmp("$img", $listing[count($listing) - 1]) === 0)
     {
         // var_dump($image_stack);
-        file_put_contents("thumbnails/.stitch-" . $base, "");
-        exec("convert " . implode(" ", $image_stack) . " -append thumbnails/$base" . "-" . $current_stack . ".jpg && rm thumbnails/.stitch-" . $base);
+        // make a lock file while we stitch to block
+        file_put_contents("$thumb_dir/.stitch-" . $base, "");
+
+        // stitch the images together
+        exec("convert " . implode(" ", $image_stack) . " -quality $quality -append $thumb_dir/$base" . "-" . $current_stack . ".jpg");
+
+        // compress the image
+
+
+        // remove our lock file
+        exec("rm $thumb_dir/.stitch-" . $base);
         
-        while (file_exists("thumbnails/.stitch"))
+        while (file_exists("$thumb_dir/.stitch"))
         {
             sleep(1);
         }
