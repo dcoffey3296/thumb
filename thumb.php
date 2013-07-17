@@ -334,6 +334,8 @@ function convert_s_tc($seconds)
 
 function print_help()
 {
+    global $input, $frequency, $h, $w, $web_path, $thumb_dir, $images_per_stack, $quality;
+
     echo "\n\n********** THUMBNAIL GENERATOR **********\n"
     . "PHP utility to generate thumbnails and a vtt file with stacks of images.\n\n"
     . "Usage: php thumbnail.php -i <input file> -p <path> [options]\n\n"
