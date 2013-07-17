@@ -348,7 +348,7 @@ function print_help()
     . "    Print help and exit.\n"
     . "-i, input <input file>\n"
     . "    the file to generate the thumbnails from.\n"
-    . "-p, path <path to file>, example: http://cdn.cs76.net/2013/summer/lectures/0/$thumb_dir\n"
+    . "-p, path <path to file>, example: http://cdn.cs76.net/2013/summer/lectures/0\n"
     . "    The full path to where the thumbnails will live on the server.\n"
     . "-q, quality <int>\n"
     . "    The quality from 1 to 100 (1 being worst) of the still images.  Default: $quality.\n"
