@@ -14,13 +14,20 @@ $images_per_stack = 12;
 // 1 to 100, 0 being lowest quality
 $quality = 35;
 
+if (count(preg_grep("/help/", $argv)))
+{
+    print_help();
+    exit(1);
+}
 
 $opts = getopts(array(
         "f" => array("switch" => array("f", "frequency"), "type" => GETOPT_VAL),
         "h" => array("switch" => array("h", "height"), "type" => GETOPT_VAL),
+        "help" => array("switch" => array("help"), "type" => GETOPT_VAL),
         "i" => array("switch" => array("i", "input"), "type" => GETOPT_VAL),
-        "p" => array("switch" => array("p", "path"), "type" => GETOPT_VAL), 
-        "w" => array("switch" => array("w", "width"), "type" => GETOPT_VAL), 
+        "p" => array("switch" => array("p", "path"), "type" => GETOPT_VAL),
+        "q" => array("switch" => array("q", "quality"), "type" => GETOPT_VAL),
+        "w" => array("switch" => array("w", "width"), "type" => GETOPT_VAL),
         $argv));
 
 // handle command line args
@@ -73,6 +80,16 @@ foreach (array_keys($opts) as $opt)
                 error_log("Invalid Height: " . $opts[$opt] . "\n");
                 exit(1);
             }
+        break;
+
+        case "help":
+            if ($opts[$opt] !== 0)
+            {
+                // help
+                print_help();
+                exit(0);
+            } 
+            else if (is_numeric($opts[$opt]) && $opts[$opt] > 0)
         break;
 
         case "w":
@@ -130,7 +147,7 @@ foreach (array_keys($opts) as $opt)
             }
         break;
 
-        case "1":
+        case "q":
             if ($opts[$opt] > 0 && $opts[$opt] <= 100)
             {
                 // user specified a path
@@ -201,7 +218,7 @@ $secs += (int) $matches[1] / 100;
 
 echo "secs: $secs\n";
 echo "frames: " . floor((29.97 * $secs)) . "\n";
-echo "preview images will be " . floor($secs / $frequency) . "\n";
+// echo "preview images will be " . floor($secs / $frequency) . "\n";
 
 try {
     mkdir($thumb_dir);
@@ -313,6 +330,29 @@ function convert_s_tc($seconds)
     $format = '%02u:%02u:%02u.%03u';
     $time = sprintf($format, $hours, $minutes, $seconds, $milliseconds);
     return $time;
+}
+
+function print_help()
+{
+    echo "\n\n********** THUMBNAIL GENERATOR **********\n"
+    . "PHP utility to generate thumbnails and a vtt file with stacks of images.\n\n"
+    . "Usage: php thumbnail.php -i <input file> -p <path> [options]\n\n"
+    . "options:\n"
+    . "-f, frequency <int>\n"
+    . "    The frequency in seconds in which to extract a still frame. Default: $frequency.\n"
+    . "-h, height <int>\n"
+    . "    The height in pixels of the thumbnails to extract. Default: $h.\n"
+    . "-help\n"
+    . "    Print help and exit.\n"
+    . "-i, input <input file>\n"
+    . "    the file to generate the thumbnails from.\n"
+    . "-p, path <path to file>, example: http://cdn.cs76.net/2013/summer/lectures/0/$thumb_dir\n"
+    . "    The full path to where the thumbnails will live on the server.\n"
+    . "-q, quality <int>\n"
+    . "    The quality from 1 to 100 (1 being worst) of the still images.  Default: $quality.\n"
+    . "-w, width <int>\n"
+    . "    The width in pixels of the thumbnails to extract. Default: $w\n\n";
+
 }
 
 
