@@ -136,10 +136,11 @@ foreach (array_keys($opts) as $opt)
         break;
 
         case "p":
-            if ($opts[$opt] !== 0 && strlen($opts[$opt] > 0))
+            if ($opts[$opt] !== 0 && strlen($opts[$opt]) > 0)
             {
                 // user specified a path
                 $web_path = $opts[$opt];
+		echo "Using path " . $opts[$opt] . "\n";
             }
             else
             {
