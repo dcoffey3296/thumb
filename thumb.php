@@ -302,7 +302,7 @@ foreach ($listing as $img)
             // add to VTT file
             $vtt .= "\n";
             $vtt .= convert_s_tc($tc1) . " --> " . convert_s_tc($tc2) . "\n";
-            $vtt .= $web_path . "/" . $base . "-" . $current_stack . ".jpg#xywh=" . /* xpos: */ "0" . "," . /* ypos: */ ($h * $key) . "," . /* width: */ $w . "," . /* height */ $h . "\n";
+            $vtt .= $web_path . "/$thumb_dir/" . $base . "-" . $current_stack . ".jpg#xywh=" . /* xpos: */ "0" . "," . /* ypos: */ ($h * $key) . "," . /* width: */ $w . "," . /* height */ $h . "\n";
 
 
             // removing
